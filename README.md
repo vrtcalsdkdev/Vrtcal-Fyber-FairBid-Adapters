@@ -1,1 +1,0 @@
-# Vrtcal-Fyber-FairBid-Adapters
