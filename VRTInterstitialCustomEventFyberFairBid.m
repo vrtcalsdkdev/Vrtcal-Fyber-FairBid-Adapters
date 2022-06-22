@@ -1,5 +1,5 @@
 //
-//  VRTInterstitialCustomEventMoPub.m
+//  VRTInterstitialCustomEventFyberFairBid.m
 //
 //  Created by Scott McCoy on 5/9/19.
 //  Copyright © 2019 VRTCAL. All rights reserved.
@@ -10,7 +10,7 @@
 
 #import <FairBidSDK/FYBInterstitial.h>
 
-//MoPub Interstitial Adapter, Vrtcal as Primary
+//Fyber FairBid Interstitial Adapter, Vrtcal as Primary
 @interface VRTInterstitialCustomEventFyberFairBid() <FYBInterstitialDelegate>
 @property NSString *placementId;
 @end
