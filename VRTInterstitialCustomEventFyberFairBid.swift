@@ -1,4 +1,4 @@
-//  Converted to Swift 5.8.1 by Swiftify v5.8.26605 - https://swiftify.com/
+
 //
 //  VRTInterstitialCustomEventFyberFairBid.swift
 //
@@ -12,65 +12,103 @@ import VrtcalSDK
 
 //Fyber FairBid Interstitial Adapter, Vrtcal as Primary
 
-class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent, FYBInterstitialDelegate {
+class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent {
     private var placementId: String?
-
-    func loadInterstitialAd() {
-        VRTLogWhereAmI()
-        placementId = customEventConfig.thirdPartyCustomEventData["adUnitId"] as? String
-        FYBInterstitial.delegate = self
+    private var fybInterstitialDelegatePassthrough = FYBInterstitialDelegatePassthrough()
+    
+    override func loadInterstitialAd() {
+        VRTLogInfo()
+  
+        guard let placementId = customEventConfig.thirdPartyAdUnitId(
+            customEventLoadDelegate: customEventLoadDelegate
+        ) else { return }
+                
+        self.placementId = placementId
+        
+        fybInterstitialDelegatePassthrough.customEventLoadDelegate = customEventLoadDelegate
+        fybInterstitialDelegatePassthrough.customEventShowDelegate = customEventShowDelegate
+        
+        FYBInterstitial.delegate = fybInterstitialDelegatePassthrough
         FYBInterstitial.request(placementId)
     }
-
-    func showInterstitialAd() {
-        VRTLogWhereAmI()
+    
+    override func showInterstitialAd() {
+        VRTLogInfo()
+        guard let placementId else {
+            
+            let vrtError = VRTError(
+                vrtErrorCode: .customEvent,
+                message: "placementId nil"
+            )
+            customEventShowDelegate?.customEventFailedToShow(vrtError: vrtError)
+            return
+        }
+        
+        
         let fybShowOptions = FYBShowOptions()
-        fybShowOptions.viewController = viewControllerDelegate.vrtViewControllerForModalPresentation()
+        fybShowOptions.viewController = viewControllerDelegate?.vrtViewControllerForModalPresentation()
         FYBInterstitial.show(placementId, options: fybShowOptions)
     }
+}
 
-    // MARK: - MPAdViewDelegate
+// MARK: - FYBInterstitialDelegate
+class FYBInterstitialDelegatePassthrough: NSObject, FYBInterstitialDelegate {
 
-    func interstitialIsAvailable(_ placementId: String?) {
+    public weak var customEventLoadDelegate: VRTCustomEventLoadDelegate?
+    public weak var customEventShowDelegate: VRTCustomEventShowDelegate?
+    
+    func interstitialIsAvailable(_ placementId: String) {
         //    Called when an Interstitial from placement becomes available
-        VRTLogWhereAmI()
-        customEventLoadDelegate.customEventLoaded()
+        VRTLogInfo()
+        customEventLoadDelegate?.customEventLoaded()
     }
 
-    func interstitialIsUnavailable(_ placementId: String?) {
+    func interstitialIsUnavailable(_ placementId: String) {
         //    Called when an Interstitial from placement becomes unavailable
-        VRTLogWhereAmI()
+        VRTLogInfo()
         //No Vrtcal Analog
     }
 
-    func interstitialDidShow(_ placementId: String?, impressionData: FYBImpressionData?) {
+    func interstitialDidShow(_ placementId: String, impressionData: FYBImpressionData) {
         //    Called when an Interstitial from placement shows up. In case the ad is a video, audio play will start here.
-        VRTLogWhereAmI()
-        customEventShowDelegate.customEventShown()
-        customEventShowDelegate.customEventDidPresentModal(VRTModalTypeInterstitial)
+        VRTLogInfo()
+        customEventShowDelegate?.customEventShown()
+        customEventShowDelegate?.customEventDidPresentModal(.interstitial)
     }
 
-    func interstitialDidFail(toShow placementId: String?, withError error: Error?, impressionData: FYBImpressionData?) {
-        //    Called when an error arises when showing an Interstitial from placement
-        VRTLogWhereAmI()
-        //No Vrtcal Analog
+    func interstitialDidFail(
+        toShow placementId: String,
+        withError error: Error,
+        impressionData: FYBImpressionData
+    ) {
+        // Called when an error arises when showing an Interstitial from placement
+        // No Vrtcal Analog
+        VRTLogInfo()
+        
+        let vrtError: VRTError
+        
+        vrtError = VRTError(vrtErrorCode: .customEvent, error: error)
+
+        customEventShowDelegate?.customEventFailedToShow(
+            vrtError: vrtError
+        )
     }
 
-    func interstitialDidClick(_ placementId: String?) {
-        //    Called when an Interstitial from placement is clicked
-        VRTLogWhereAmI()
-        customEventShowDelegate.customEventClicked()
+    func interstitialDidClick(_ placementId: String) {
+        // Called when an Interstitial from placement is clicked
+        VRTLogInfo()
+        customEventShowDelegate?.customEventClicked()
     }
 
-    func interstitialDidDismiss(_ placementId: String?) {
+    func interstitialDidDismiss(_ placementId: String) {
         //    Called when an Interstitial from placement hides. In case the ad is a video, audio play will stop here.
-        VRTLogWhereAmI()
-        customEventShowDelegate.customEventDidDismissModal(VRTModalTypeInterstitial)
+        VRTLogInfo()
+        customEventShowDelegate?.customEventDidDismissModal(.interstitial)
     }
 
-    func interstitialWillRequest(_ placementId: String?) {
+    func interstitialWillRequest(_ placementId: String) {
         //    Called when an Interstitial is going to be requested.
-        VRTLogWhereAmI()
+        VRTLogInfo()
         //No Vrtcal Analog
     }
 }
