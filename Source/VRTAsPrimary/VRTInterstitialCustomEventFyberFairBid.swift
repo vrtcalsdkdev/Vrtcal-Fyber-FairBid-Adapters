@@ -10,7 +10,7 @@ import FairBidSDK
 import Foundation
 import VrtcalSDK
 
-//Fyber FairBid Interstitial Adapter, Vrtcal as Primary
+// Fyber FairBid Interstitial Adapter, Vrtcal as Primary
 
 class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent {
     private var placementId: String?
