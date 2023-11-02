@@ -26,7 +26,6 @@ class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent
         self.placementId = placementId
         
         fybInterstitialDelegatePassthrough.customEventLoadDelegate = customEventLoadDelegate
-        fybInterstitialDelegatePassthrough.customEventShowDelegate = customEventShowDelegate
         
         FYBInterstitial.delegate = fybInterstitialDelegatePassthrough
         FYBInterstitial.request(placementId)
@@ -34,6 +33,7 @@ class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent
     
     override func showInterstitialAd() {
         VRTLogInfo()
+        fybInterstitialDelegatePassthrough.customEventShowDelegate = customEventShowDelegate
         guard let placementId else {
             
             let vrtError = VRTError(
@@ -44,7 +44,7 @@ class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent
             return
         }
         
-        
+        customEventShowDelegate?.customEventWillPresentModal(.interstitial)
         let fybShowOptions = FYBShowOptions()
         fybShowOptions.viewController = viewControllerDelegate?.vrtViewControllerForModalPresentation()
         FYBInterstitial.show(placementId, options: fybShowOptions)
@@ -112,5 +112,3 @@ class FYBInterstitialDelegatePassthrough: NSObject, FYBInterstitialDelegate {
         //No Vrtcal Analog
     }
 }
-
-//Fyber FairBid Interstitial Adapter, Vrtcal as Primary
