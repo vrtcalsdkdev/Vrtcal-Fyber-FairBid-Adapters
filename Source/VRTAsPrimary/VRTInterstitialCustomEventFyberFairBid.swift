@@ -1,11 +1,3 @@
-
-//
-//  VRTInterstitialCustomEventFyberFairBid.swift
-//
-//  Created by Scott McCoy on 5/9/19.
-//  Copyright © 2019 VRTCAL. All rights reserved.
-//
-
 import FairBidSDK
 import Foundation
 import VrtcalSDK
@@ -18,17 +10,24 @@ class VRTInterstitialCustomEventFyberFairBid: VRTAbstractInterstitialCustomEvent
     
     override func loadInterstitialAd() {
         VRTLogInfo()
-  
-        guard let placementId = customEventConfig.thirdPartyAdUnitId(
-            customEventLoadDelegate: customEventLoadDelegate
-        ) else { return }
-                
-        self.placementId = placementId
         
-        fybInterstitialDelegatePassthrough.customEventLoadDelegate = customEventLoadDelegate
-        
-        FYBInterstitial.delegate = fybInterstitialDelegatePassthrough
-        FYBInterstitial.request(placementId)
+        VRTAsPrimaryManager.singleton.initializeThirdParty(
+            customEventConfig: customEventConfig
+        ) { result in
+            guard let placementId = self.customEventConfig.thirdPartyCustomEventDataValueOrFailToLoad(
+                thirdPartyCustomEventKey: ThirdPartyCustomEventKey.adUnitId,
+                customEventLoadDelegate: self.customEventLoadDelegate
+            ) else {
+                return
+            }
+                    
+            self.placementId = placementId
+            
+            self.fybInterstitialDelegatePassthrough.customEventLoadDelegate = self.customEventLoadDelegate
+            
+            FYBInterstitial.delegate = self.fybInterstitialDelegatePassthrough
+            FYBInterstitial.request(placementId)
+        }
     }
     
     override func showInterstitialAd() {
